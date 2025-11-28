@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+.env
+*.h5
+chromedriver*
+temp_screenshot.png
+.DS_Store
+*.pkl.backup
+.git
+*.egg-info/
+dist/
+build/
