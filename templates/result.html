@@ -1,1 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PhishGuard Result</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #e9f2fb 0%, #fafdff 90%);
+      background-attachment: fixed;
+    }
+    .fade-in {
+      animation: fadeIn 1.1s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .award-card {
+      box-shadow: 0 8px 24px rgba(50, 80, 180, .07), 0 1.5px 3px #e7ecf0;
+      border-radius: 1.3rem;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(3px);
+      border: 1.3px solid #e3ebf7;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .award-card:hover {
+      box-shadow: 0 12px 34px rgba(41,56,150,0.11), 0 5px 16px #e3eafc;
+      transform: scale(1.01);
+    }
+    .badge-lg {
+      font-size: 1.1rem;
+      padding: .44em 1.1em;
+    }
+    .muted {
+      color: #a3adc3 !important;
+      word-break: break-all;
+    }
+    .thin-bar {
+      height: 14px !important;
+      border-radius: 10px;
+      background-color: #f6fafd;
+    }
+  </style>
+</head>
+<body>
+<div class="container py-5">
+  <div class="award-card p-4 fade-in mb-5">
+    <div class="row align-items-center">
+      <div class="col">
+        <h2 class="text-primary mb-0">PhishGuard Result</h2>
+        <p class="mb-2 mt-1">
+          <strong>URL Entered:</strong>
+          <span class="muted">{{ url }}</span>
+        </p>
 
+        <div>
+          <span><strong>URL-based Prediction:</strong>
+            {% if url_label == 'Phishing' %}
+              <span class="badge bg-danger badge-lg">Phishing</span>
+            {% else %}
+              <span class="badge bg-success badge-lg">Legitimate</span>
+            {% endif %}
+          </span>
+          <br />
+          <span><strong>Visual Model Prediction:</strong>
+            {% if visual_label == 'Phishing' %}
+              <span class="badge bg-danger badge-lg">Phishing</span>
+            {% elif visual_label == 'Legitimate' %}
+              <span class="badge bg-success badge-lg">Legitimate</span>
+            {% else %}
+              <span class="badge bg-secondary badge-lg">{{ visual_label }}</span>
+            {% endif %}
+            {% if visual_score is not none %}
+              (Score: {{ "%.4f"|format(visual_score) }})
+            {% endif %}
+          </span>
+        </div>
+
+        <div class="mt-2">
+          <strong>Combined Final Score:</strong>
+          <span class="fw-bold">{{ "%.4f"|format(combined_score) }}</span>
+          <span class="text-muted">(Higher = more likely phishing)</span>
+        </div>
+
+        <div class="mt-3 mb-2">
+          <label for="confidenceMeter" class="form-label">Phishing Confidence Meter</label>
+          <div class="progress thin-bar" style="max-width: 450px;">
+            <div
+              class="progress-bar progress-bar-animated
+                {% if combined_score > 0.7 %} bg-danger
+                {% elif combined_score > 0.3 %} bg-warning
+                {% else %} bg-success {% endif %}"
+              role="progressbar"
+              style="width: {{ (combined_score*100)|round(1) }}%;"
+              aria-valuenow="{{ (combined_score*100)|round(1) }}"
+              aria-valuemin="0"
+              aria-valuemax="100">
+              {{ (combined_score*100)|round(1) }}%
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fade-in award-card p-4 mt-4 mb-3">
+    <h3 class="mb-3">Top 5 Contributing Features</h3>
+    <table class="table table-striped table-bordered mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Feature</th>
+          <th>Importance (raw)</th>
+          <th>Value (this URL)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for fname, imp, val in top5_pairs %}
+        <tr>
+          <td>{{ fname }}</td>
+          <td>{{ '%.4f'|format(imp) }}</td>
+          <td>{{ val }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">Try another URL</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
